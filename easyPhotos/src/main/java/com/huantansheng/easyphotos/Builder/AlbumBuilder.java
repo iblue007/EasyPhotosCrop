@@ -15,6 +15,7 @@ import com.huantansheng.easyphotos.models.ad.AdListener;
 import com.huantansheng.easyphotos.models.album.entity.Photo;
 import com.huantansheng.easyphotos.result.Result;
 import com.huantansheng.easyphotos.setting.Setting;
+import com.huantansheng.easyphotos.ui.ClipImageActivity;
 import com.huantansheng.easyphotos.ui.EasyPhotosActivity;
 import com.huantansheng.easyphotos.utils.result.EasyResult;
 import com.huantansheng.easyphotos.utils.uri.UriUtils;
@@ -45,6 +46,7 @@ public class AlbumBuilder {
     private WeakReference<android.app.Fragment> mFragment;
     private StartupType startupType;
     private WeakReference<AdListener> adListener;
+    public static boolean isCrop = false;//是否开启裁剪功能
 
     //私有构造函数，不允许外部调用，真正实例化通过静态方法实现
     private AlbumBuilder(Activity activity, StartupType startupType) {
@@ -66,6 +68,7 @@ public class AlbumBuilder {
         mFragmentV = new WeakReference<Fragment>(fragment);
         this.startupType = startupType;
     }
+
 
     /**
      * 内部处理相机和相册的实例
@@ -191,6 +194,13 @@ public class AlbumBuilder {
         return AlbumBuilder.this;
     }
 
+    /**
+     * 是否开启裁剪功能
+     */
+    public AlbumBuilder setIsCrop(boolean isCrop1) {
+        this.isCrop = isCrop1;
+        return AlbumBuilder.this;
+    }
 
     /**
      * 设置选择数
@@ -287,9 +297,10 @@ public class AlbumBuilder {
 
     /**
      * 设置默认选择图片地址集合
-     * @Deprecated android 10 不推荐使用直接使用Path方式，推荐使用Photo类
+     *
      * @param selectedPhotoPaths 默认选择图片地址集合
      * @return AlbumBuilder
+     * @Deprecated android 10 不推荐使用直接使用Path方式，推荐使用Photo类
      */
     @Deprecated
     public AlbumBuilder setSelectedPhotoPaths(ArrayList<String> selectedPhotoPaths) {
@@ -299,18 +310,18 @@ public class AlbumBuilder {
             File file = new File(path);
             Uri uri = null;
             if (null != mActivity && null != mActivity.get()) {
-               uri = UriUtils.getUri(mActivity.get(),file);
+                uri = UriUtils.getUri(mActivity.get(), file);
             }
             if (null != mFragment && null != mFragment.get()) {
-                uri = UriUtils.getUri(mFragment.get().getActivity(),file);
+                uri = UriUtils.getUri(mFragment.get().getActivity(), file);
             }
             if (null != mFragmentV && null != mFragmentV.get()) {
-                uri = UriUtils.getUri(mFragmentV.get().getActivity(),file);
+                uri = UriUtils.getUri(mFragmentV.get().getActivity(), file);
             }
             if (uri == null) {
                 uri = Uri.fromFile(file);
             }
-            Photo photo = new Photo(null,uri, path, 0, 0, 0, 0, 0, null);
+            Photo photo = new Photo(null, uri, path, 0, 0, 0, 0, 0, null);
             selectedPhotos.add(photo);
         }
         Setting.selectedPhotos.addAll(selectedPhotos);
@@ -463,7 +474,11 @@ public class AlbumBuilder {
 
     public void start(int requestCode) {
         setSettingParams();
-        launchEasyPhotosActivity(requestCode);
+        if (this.isCrop) {
+            ClipImageActivity.openActivity(mActivity.get(), requestCode);
+        } else {
+            launchEasyPhotosActivity(requestCode);
+        }
     }
 
     /**

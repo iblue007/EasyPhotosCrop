@@ -35,7 +35,6 @@ public class Setting {
     public static String originalMenuUnusableHint = "";
     public static boolean selectedOriginal = false;
     public static String fileProviderAuthority = null;
-    public static boolean isCrop = false;//
     public static boolean isShowCamera = false;
     public static int cameraLocation = 1;
     public static boolean onlyStartCamera = false;

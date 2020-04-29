@@ -70,5 +70,6 @@
 
     <string name="video_easy_photos">视频</string>
 
-
+    <string name="selector_crop_image">裁剪图片</string>
+    <string name="selector_send">确定</string>
 </resources>

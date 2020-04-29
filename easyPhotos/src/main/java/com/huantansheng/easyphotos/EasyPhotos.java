@@ -35,7 +35,7 @@ public class EasyPhotos {
     //easyPhotos的返回数据Key
     public static final String RESULT_PHOTOS = "keyOfEasyPhotosResult";
     public static final String RESULT_SELECTED_ORIGINAL = "keyOfEasyPhotosResultSelectedOriginal";
-
+    public static final String SELECT_RESULT = "select_result";
     /**
      * 创建相机
      *

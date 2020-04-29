@@ -8,6 +8,8 @@ package com.huantansheng.easyphotos.constant;
 public class Key {
     //预览图片的当前角标
     public static final String PREVIEW_PHOTO_INDEX = "keyOfPreviewPhotoIndex";
+    //预览图片的数据源
+    public static final String PREVIEW_PHOTO_SOURCE = "keyOfPreviewPhotoSource";
     //当前预览界面的专辑index
     public static final String PREVIEW_ALBUM_ITEM_INDEX = "keyOfPreviewAlbumItemIndex";
     //预览界面是否点击完成

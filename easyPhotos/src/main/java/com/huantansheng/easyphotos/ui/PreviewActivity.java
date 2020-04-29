@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.os.Parcelable;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
@@ -27,6 +28,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.huantansheng.easyphotos.EasyPhotos;
 import com.huantansheng.easyphotos.R;
 import com.huantansheng.easyphotos.constant.Code;
 import com.huantansheng.easyphotos.constant.Key;
@@ -40,6 +42,7 @@ import com.huantansheng.easyphotos.utils.Color.ColorUtils;
 import com.huantansheng.easyphotos.utils.system.SystemUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 预览页
@@ -50,6 +53,13 @@ public class PreviewActivity extends AppCompatActivity implements PreviewPhotosA
         Intent intent = new Intent(act, PreviewActivity.class);
         intent.putExtra(Key.PREVIEW_ALBUM_ITEM_INDEX, albumItemIndex);
         intent.putExtra(Key.PREVIEW_PHOTO_INDEX, currIndex);
+        act.startActivityForResult(intent, Code.REQUEST_PREVIEW_ACTIVITY);
+    }
+
+    public static void startSelected(Activity act, int currIndex, ArrayList<Photo> photoList) {
+        Intent intent = new Intent(act, PreviewActivity.class);
+        intent.putExtra(Key.PREVIEW_PHOTO_INDEX, currIndex);
+        intent.putParcelableArrayListExtra(Key.PREVIEW_PHOTO_SOURCE, photoList);
         act.startActivityForResult(intent, Code.REQUEST_PREVIEW_ACTIVITY);
     }
 
@@ -91,7 +101,7 @@ public class PreviewActivity extends AppCompatActivity implements PreviewPhotosA
     private int lastPosition = 0;//记录recyclerView最后一次角标位置，用于判断是否转换了item
     private boolean isSingle = Setting.count == 1;
     private boolean unable = Result.count() == Setting.count;
-
+    private boolean hasDataSource = false;
     private FrameLayout flFragment;
     private PreviewFragment previewFragment;
     private int statusColor;
@@ -133,17 +143,28 @@ public class PreviewActivity extends AppCompatActivity implements PreviewPhotosA
 
     private void initData() {
         Intent intent = getIntent();
-        int albumItemIndex = intent.getIntExtra(Key.PREVIEW_ALBUM_ITEM_INDEX, 0);
         photos.clear();
-
-        if (albumItemIndex == -1) {
-            photos.addAll(Result.photos);
-        } else {
-            photos.addAll(AlbumModel.instance.getCurrAlbumItemPhotos(albumItemIndex));
-        }
         index = intent.getIntExtra(Key.PREVIEW_PHOTO_INDEX, 0);
-
-        lastPosition = index;
+        ArrayList<Photo> resultPhotos = intent.getParcelableArrayListExtra(Key.PREVIEW_PHOTO_SOURCE);
+        int albumItemIndex = intent.getIntExtra(Key.PREVIEW_ALBUM_ITEM_INDEX, 0);
+        if (resultPhotos != null && resultPhotos.size() > 0) {//提供数据源的情况
+            photos.addAll(resultPhotos);
+            findViewById(R.id.tv_selector).setVisibility(View.GONE);
+            findViewById(R.id.iv_selector).setVisibility(View.GONE);
+            findViewById(R.id.tv_done).setVisibility(View.GONE);
+            hasDataSource = true;
+        } else {
+            hasDataSource = false;
+            findViewById(R.id.tv_selector).setVisibility(View.VISIBLE);
+            findViewById(R.id.iv_selector).setVisibility(View.VISIBLE);
+            findViewById(R.id.tv_done).setVisibility(View.VISIBLE);
+            if (albumItemIndex == -1) {
+                photos.addAll(Result.photos);
+            } else {
+                photos.addAll(AlbumModel.instance.getCurrAlbumItemPhotos(albumItemIndex));
+            }
+            lastPosition = index;
+        }
         mVisible = true;
     }
 
@@ -425,7 +446,9 @@ public class PreviewActivity extends AppCompatActivity implements PreviewPhotosA
                 scaleHide.setDuration(200);
                 tvDone.startAnimation(scaleHide);
             }
-            tvDone.setVisibility(View.GONE);
+            if (tvDone != null) {
+                tvDone.setVisibility(View.GONE);
+            }
             flFragment.setVisibility(View.GONE);
         } else {
             if (View.GONE == tvDone.getVisibility()) {
@@ -434,9 +457,17 @@ public class PreviewActivity extends AppCompatActivity implements PreviewPhotosA
                 tvDone.startAnimation(scaleShow);
             }
             flFragment.setVisibility(View.VISIBLE);
-            tvDone.setVisibility(View.VISIBLE);
-            tvDone.setText(getString(R.string.selector_action_done_easy_photos, Result.count(),
-                    Setting.count));
+            if (hasDataSource) {
+                if (tvDone != null) {
+                    tvDone.setVisibility(View.GONE);
+                }
+            } else {
+                if (tvDone != null) {
+                    tvDone.setVisibility(View.VISIBLE);
+                    tvDone.setText(getString(R.string.selector_action_done_easy_photos, Result.count(),
+                            Setting.count));
+                }
+            }
         }
     }
 

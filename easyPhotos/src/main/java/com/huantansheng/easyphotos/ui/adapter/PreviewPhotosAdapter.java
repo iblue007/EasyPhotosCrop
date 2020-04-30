@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.PointF;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,7 +61,7 @@ public class PreviewPhotosAdapter extends RecyclerView.Adapter<PreviewPhotosAdap
         final String type = photos.get(position).type;
         final double ratio =
                 (double) photos.get(position).height / (double) photos.get(position).width;
-
+        Log.e("======", "======path:" + path + "--uri:" + uri);
         holder.ivPlay.setVisibility(View.GONE);
         holder.ivPhotoView.setVisibility(View.GONE);
         holder.ivLongPhoto.setVisibility(View.GONE);
@@ -84,7 +85,7 @@ public class PreviewPhotosAdapter extends RecyclerView.Adapter<PreviewPhotosAdap
                 holder.ivLongPhoto.setImage(ImageSource.uri(path));
             } else {
                 holder.ivPhotoView.setVisibility(View.VISIBLE);
-                if (path.contains("http://test.qiniu.dpzaixian.com")) {
+                if (path.contains("http://")) {
                     Setting.imageEngine.loadPhoto(holder.ivPhotoView.getContext(), path,
                             holder.ivPhotoView);
                 } else {

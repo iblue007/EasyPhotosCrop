@@ -3,6 +3,7 @@ package com.huantansheng.easyphotos.demo;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
@@ -26,6 +27,7 @@ import androidx.recyclerview.widget.PagerSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SnapHelper;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.navigation.NavigationView;
 import com.huantansheng.easyphotos.EasyPhotos;
 import com.huantansheng.easyphotos.callback.PuzzleCallback;
@@ -33,10 +35,14 @@ import com.huantansheng.easyphotos.callback.SelectCallback;
 import com.huantansheng.easyphotos.constant.Type;
 import com.huantansheng.easyphotos.models.album.entity.Photo;
 import com.huantansheng.easyphotos.setting.Setting;
+import com.huantansheng.easyphotos.utils.system.VersionUtils;
+import com.huantansheng.easyphotos.utils.uri.UriUtils;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
+
+import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
 
 public class SampleActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -159,7 +165,7 @@ public class SampleActivity extends AppCompatActivity
                         .setFileProviderAuthority("com.huantansheng.easyphotos.demo.fileprovider")
                         .setIsCrop(true)
                         .setPuzzleMenu(false)
-                        .start(101);
+                        .start(3000);
                 break;
 
             case R.id.album_camera_multi://相册多选，有相机功能
@@ -422,9 +428,27 @@ public class SampleActivity extends AppCompatActivity
                 selectedPhotoList.add(puzzlePhoto);
                 adapter.notifyDataSetChanged();
                 rvImage.smoothScrollToPosition(0);
+                return ;
             }
 
-
+             if(requestCode == 3000){
+                 ArrayList<String> resultPhotos = data.getStringArrayListExtra(EasyPhotos.SELECT_RESULT);
+                 if (resultPhotos != null && resultPhotos.size() > 0) {//裁剪单选
+                     Log.e("======", "======resultPhotos:" + resultPhotos.toString());
+                 } else {//多选
+                     ArrayList<Photo> photoArrayList = data.getParcelableArrayListExtra(EasyPhotos.RESULT_PHOTOS);
+                     if (photoArrayList != null && photoArrayList.size() > 0) {
+                         Uri uri = photoArrayList.get(0).uri;
+                         if (VersionUtils.isAndroidQ()) {
+                             String uploadStr = UriUtils.getRealPathFromUri(SampleActivity.this, uri);
+                             Log.e("======", "======pathName:" + uploadStr);
+                         } else {
+                             String pathName = UriUtils.getRealPathFromUri(SampleActivity.this, uri);
+                             Log.e("======", "======pathName111:" + pathName);
+                         }
+                     }
+                 }
+             }
         } else if (RESULT_CANCELED == resultCode) {
             Toast.makeText(this, "cancel", Toast.LENGTH_SHORT).show();
         }

@@ -36,6 +36,11 @@ public class GlideEngine implements ImageEngine {
         return instance;
     }
 
+    @Override
+    public void loadPhoto(@NonNull Context context, @NonNull String path, @NonNull ImageView imageView) {
+        Glide.with(context).load(path).transition(withCrossFade()).into(imageView);
+    }
+
     /**
      * 加载图片到ImageView
      *

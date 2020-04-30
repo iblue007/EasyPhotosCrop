@@ -5,6 +5,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,6 +36,7 @@ import com.huantansheng.easyphotos.setting.Setting;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.logging.Logger;
 
 public class SampleActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -155,6 +157,8 @@ public class SampleActivity extends AppCompatActivity
 
                 EasyPhotos.createAlbum(this, true, GlideEngine.getInstance())
                         .setFileProviderAuthority("com.huantansheng.easyphotos.demo.fileprovider")
+                        .setIsCrop(true)
+                        .setPuzzleMenu(false)
                         .start(101);
                 break;
 
@@ -381,16 +385,17 @@ public class SampleActivity extends AppCompatActivity
             //相机或相册回调
             if (requestCode == 101) {
                 //返回对象集合：如果你需要了解图片的宽、高、大小、用户是否选中原图选项等信息，可以用这个
-                ArrayList<Photo> resultPhotos = data.getParcelableArrayListExtra(EasyPhotos.RESULT_PHOTOS);
+                // ArrayList<Photo> resultPhotos = data.getParcelableArrayListExtra(EasyPhotos.SELECT_RESULT);
+                ArrayList<String> resultPhotos = data.getStringArrayListExtra(EasyPhotos.SELECT_RESULT);
 
                 //返回图片地址集合时如果你需要知道用户选择图片时是否选择了原图选项，用如下方法获取
-                boolean selectedOriginal = data.getBooleanExtra(EasyPhotos.RESULT_SELECTED_ORIGINAL, false);
+                //  boolean selectedOriginal = data.getBooleanExtra(EasyPhotos.RESULT_SELECTED_ORIGINAL, false);
+                Log.e("======", "======resultPhotos:" + resultPhotos.toString());
 
-
-                selectedPhotoList.clear();
-                selectedPhotoList.addAll(resultPhotos);
-                adapter.notifyDataSetChanged();
-                rvImage.smoothScrollToPosition(0);
+//                selectedPhotoList.clear();
+//                selectedPhotoList.addAll(resultPhotos);
+//                adapter.notifyDataSetChanged();
+//                rvImage.smoothScrollToPosition(0);
 
                 return;
             }

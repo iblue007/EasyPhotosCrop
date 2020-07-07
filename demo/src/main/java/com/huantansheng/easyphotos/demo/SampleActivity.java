@@ -32,12 +32,15 @@ import com.google.android.material.navigation.NavigationView;
 import com.huantansheng.easyphotos.EasyPhotos;
 import com.huantansheng.easyphotos.callback.PuzzleCallback;
 import com.huantansheng.easyphotos.callback.SelectCallback;
+import com.huantansheng.easyphotos.compress.CompressHelper;
+import com.huantansheng.easyphotos.compress.FileUtil;
 import com.huantansheng.easyphotos.constant.Type;
 import com.huantansheng.easyphotos.models.album.entity.Photo;
 import com.huantansheng.easyphotos.setting.Setting;
 import com.huantansheng.easyphotos.utils.system.VersionUtils;
 import com.huantansheng.easyphotos.utils.uri.UriUtils;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -163,8 +166,9 @@ public class SampleActivity extends AppCompatActivity
 
                 EasyPhotos.createAlbum(this, true, GlideEngine.getInstance())
                         .setFileProviderAuthority("com.huantansheng.easyphotos.demo.fileprovider")
-                        .setIsCrop(true)
+                        .setIsCrop(false)
                         .setPuzzleMenu(false)
+                        .setCount(6)
                         .start(3000);
                 break;
 
@@ -396,7 +400,7 @@ public class SampleActivity extends AppCompatActivity
 
                 //返回图片地址集合时如果你需要知道用户选择图片时是否选择了原图选项，用如下方法获取
                 //  boolean selectedOriginal = data.getBooleanExtra(EasyPhotos.RESULT_SELECTED_ORIGINAL, false);
-                Log.e("======", "======resultPhotos:" + resultPhotos.toString());
+                Log.e("======", "======resultPhotos:" + resultPhotos.toString() + "--path:" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath());
 
 //                selectedPhotoList.clear();
 //                selectedPhotoList.addAll(resultPhotos);
@@ -428,27 +432,48 @@ public class SampleActivity extends AppCompatActivity
                 selectedPhotoList.add(puzzlePhoto);
                 adapter.notifyDataSetChanged();
                 rvImage.smoothScrollToPosition(0);
-                return ;
+                return;
             }
 
-             if(requestCode == 3000){
-                 ArrayList<String> resultPhotos = data.getStringArrayListExtra(EasyPhotos.SELECT_RESULT);
-                 if (resultPhotos != null && resultPhotos.size() > 0) {//裁剪单选
-                     Log.e("======", "======resultPhotos:" + resultPhotos.toString());
-                 } else {//多选
-                     ArrayList<Photo> photoArrayList = data.getParcelableArrayListExtra(EasyPhotos.RESULT_PHOTOS);
-                     if (photoArrayList != null && photoArrayList.size() > 0) {
-                         Uri uri = photoArrayList.get(0).uri;
-                         if (VersionUtils.isAndroidQ()) {
-                             String uploadStr = UriUtils.getRealPathFromUri(SampleActivity.this, uri);
-                             Log.e("======", "======pathName:" + uploadStr);
-                         } else {
-                             String pathName = UriUtils.getRealPathFromUri(SampleActivity.this, uri);
-                             Log.e("======", "======pathName111:" + pathName);
-                         }
-                     }
-                 }
-             }
+            if (requestCode == 3000) {
+                ArrayList<String> resultPhotos = data.getStringArrayListExtra(EasyPhotos.SELECT_RESULT);
+                ArrayList<Photo> photoArrayList = data.getParcelableArrayListExtra(EasyPhotos.RESULT_PHOTOS);
+                if (resultPhotos != null && resultPhotos.size() > 0) {//裁剪单选
+                    Log.e("======", "======resultPhotos:" + resultPhotos.toString());
+                } else {//多选
+                    if (photoArrayList != null && photoArrayList.size() > 0) {
+                        Uri uri = photoArrayList.get(0).uri;
+                        if (VersionUtils.isAndroidQ()) {
+                            String uploadStr = UriUtils.getRealPathFromUri(SampleActivity.this, uri);
+                            Log.e("======", "======pathName:" + uploadStr);
+                        } else {
+                            String pathName = UriUtils.getRealPathFromUri(SampleActivity.this, uri);
+                            Log.e("======", "======pathName111:" + pathName);
+                        }
+                    }
+                }
+                if (photoArrayList != null && photoArrayList.size() > 0) {
+                    Log.e("======", "=====path:" + Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES).getAbsolutePath());
+                    String photoPath = photoArrayList.get(0).path;
+                    File file = new File(photoPath);
+                    String readableFileSize1 = FileUtil.getReadableFileSize(file.length());
+                    File file22 = new CompressHelper.Builder(this)
+                            .setMaxWidth(720)  // 默认最大宽度为720
+                            .setMaxHeight(960) // 默认最大高度为960
+                            .setQuality(80)    // 默认压缩质量为80
+                            .setFileName("123456") // 设置你需要修改的文件名
+                            .setCompressFormat(Bitmap.CompressFormat.JPEG) // 设置默认压缩为jpg格式
+                            .setDestinationDirectoryPath(Environment.getExternalStoragePublicDirectory(
+                                    Environment.DIRECTORY_PICTURES).getAbsolutePath())
+                            .build()
+                            .compressToFile(file);
+
+                    File file33 = CompressHelper.getDefault(this).compressToFile(file);
+                    String readableFileSize2 = FileUtil.getReadableFileSize(file22.length());
+                    String readableFileSize3 = FileUtil.getReadableFileSize(file33.length());
+                    Log.e("======", "======readableFileSize1:" + readableFileSize1 + "--readableFileSize2:" + readableFileSize2 + "--readableFileSize3:" + readableFileSize3);
+                }
+            }
         } else if (RESULT_CANCELED == resultCode) {
             Toast.makeText(this, "cancel", Toast.LENGTH_SHORT).show();
         }
